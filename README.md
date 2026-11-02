@@ -51,7 +51,8 @@ No transitions or build animations; slide 42 keeps the original animated Google 
 
 - PDF: `npm run pdf` → `slides.pdf` (uses the installed Google Chrome)
 - Static site: `npm run build` → `dist/`
-- GitHub Pages: `npm run deploy` builds and force-pushes `dist/` to the `gh-pages` branch
+- GitHub Pages: every push to `main` runs `.github/workflows/deploy.yml`, which builds and publishes
+  `dist/` to the `gh-pages` branch. `npm run deploy` does the same by hand.
   (site: https://lipengfeizju.github.io/water_presentation/)
 
 ## Files
