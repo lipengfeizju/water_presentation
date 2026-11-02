@@ -494,3 +494,22 @@
 
 /* original content is shrunk a little so the header does not cover the titles */
 .reveal .slides section > .body { position: absolute; inset: 0; transform: scale(0.92); transform-origin: 50% 100%; }
+
+/* ---------- air pollution sources (three columns + quote) ---------- */
+.reveal .aq-cols {
+  position: absolute; left: 96px; right: 96px; top: 205px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 48px;
+}
+.reveal .aq-col { border-top: 8px solid var(--accent); padding-top: 18px; }
+.reveal .aq-tag { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.reveal .aq-col h3 { margin: 6px 0 16px; font-size: 44px; color: var(--ink); }
+.reveal .aq-what { margin: 0; height: 175px; font-size: 29px; line-height: 1.3; color: #333; }
+.reveal .aq-ex { margin-top: 18px; padding: 20px 24px; background: #fff3ea; border-left: 6px solid var(--rit-orange); }
+.reveal .aq-ex b { display: block; font-size: 30px; color: var(--ink); }
+.reveal .aq-ex span { display: block; margin-top: 6px; font-size: 27px; line-height: 1.3; color: #333; }
+.reveal .aq-quote {
+  position: absolute; left: 96px; right: 96px; top: 760px; width: auto;
+  margin: 0; padding: 0; box-shadow: none; background: none;
+  font-size: 40px; font-style: italic; font-weight: 700; color: #c62828; text-align: center;
+}
+.reveal .aq-quote cite { display: block; margin-top: 10px; font-size: 24px; font-style: normal; font-weight: 400; color: var(--muted); }

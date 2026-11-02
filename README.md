@@ -1,6 +1,6 @@
 # UWED talk (reveal.js)
 
-"Scaling Intelligence Under Resource Constraints: Measurement and Optimization for Sustainable Computing": 52 slides (one more is skipped with data-visibility="hidden").
+"Scaling Intelligence Under Resource Constraints: Measurement and Optimization for Sustainable Computing": 53 slides (one more is skipped with data-visibility="hidden").
 
 - Introduction (slides 1–21): `public/orig/intro-*.jpg`, from slides 1–17 of `Pengfei_U-WED_slides.pptx`,
   plus two HTML cooling slides after intro slide 11 (heat path, and PUE/WUE by cooling method from
@@ -9,9 +9,11 @@
   intro slide 15 is split into two pages (diagram, then offsite/onsite photos).
 - Water section (slides 22–34): the new 13-slide "Small Bottle, Big Pipe" section, built as HTML in
   the same visual style (Arial, black titles, grey captions).
-- Remaining slides (35–50): `public/orig/slide-*.jpg`, original slides 24–39 of
+- Remaining slides (35–53): `public/orig/slide-*.jpg`, original slides 24–39 of
   `AI_Public_Health_Reorganized .pptx`. Original slide 33 (slide 45 here) is rebuilt in HTML so its
-  PUE chart is no longer stretched. Original slide 34 is commented out. Before the eGLB case study,
+  PUE chart is no longer stretched. Original slide 34 is commented out. Original slide 28 (Omaha news) follows the health quick
+  facts, then an HTML slide on the three sources of data-center air pollution (grid plants, backup
+  diesel, onsite gas turbines such as xAI in Memphis). Before the eGLB case study,
   three slides cover eGLB: an HTML slide on the fairness-aware GLB objective, then the algorithm and its
   intuition (`public/orig/eglb-*.jpg`, slides 39 and 40 of `2026_AI_public_health.pdf`; their baked-in
   titles are covered by HTML titles).
@@ -43,7 +45,7 @@ npm run dev        # opens http://localhost:5173
 | `O` / `Esc` | Slide overview |
 | `B` | Black screen |
 
-No transitions or build animations; slide 41 keeps the original animated Google GIF.
+No transitions or build animations; slide 42 keeps the original animated Google GIF.
 
 ## Export
 
