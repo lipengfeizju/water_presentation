@@ -1,0 +1,24 @@
+{
+  "name": "big-pipe-slides",
+  "version": "1.0.0",
+  "description": "Reveal.js talk: data center water use and local water capacity (Han et al. 2026)",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "preview": "vite preview",
+    "pdf": "node scripts/export-pdf.mjs",
+    "deploy": "sh scripts/deploy-pages.sh"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "reveal.js": "^5.2.1"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.43.1",
+    "vite": "^6.4.5"
+  },
+  "private": true,
+  "type": "module"
+}

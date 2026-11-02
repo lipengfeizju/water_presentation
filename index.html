@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scaling Intelligence Under Resource Constraints: Measurement and Optimization for Sustainable Computing</title>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- title slide, in the style of the RIT GCCIS course decks -->
+<section class="cover" data-no-number>
+  <img class="cover-logo" src="/figures/rit-gccis.png" alt="RIT Golisano College of Computing and Information Sciences">
+  <div class="cover-frame">
+    <h1 class="cover-title">Scaling Intelligence Under<br>Resource Constraints</h1>
+    <p class="cover-sub">Measurement and Optimization for Sustainable Computing</p>
+  </div>
+  <p class="cover-name">Pengfei Li</p>
+  <p class="cover-joint">Joint work with Yuelin Han (UCR), Zhifeng Wu (UCR), Jianyi Yang (University of Houston), Adam Wierman (Caltech) and Shaolei Ren (UCR)</p>
+</section>
+
+<!-- introduction slide 2 (Pengfei_U-WED_slides.pptx) -->
+<section data-section="Motivation" class="orig">
+  <img class="full" src="/orig/intro-02.jpg" alt="Slide 2">
+  <aside class="notes">
+    <p>During the past few years, AI models have made significant progress, with applications spanning diverse fields, including content generation, scientific discovery and robotics. I believe in the near future, such AI tools will completely change our life style.</p>
+    <p>Let’s take transportation as an example. Every year, Americans waste approximately 7 billion hours stuck in traffic. That’s time that could otherwise be spent with their family or on activities that truly matter. AI has the potential to revolutionize this experience. Through fully automated driving, we can significantly enhance efficiency and convenience, reclaiming valuable time and alleviating stress for millions of people.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 3 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-03.jpg" alt="Slide 3">
+  <p class="src">[1] Nvidia Blog <a href="https://blogs.nvidia.com/blog/ai-scaling-laws/">https://blogs.nvidia.com/blog/ai-scaling-laws/</a></p>
+</section>
+
+<!-- introduction slide 4 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-04.jpg" alt="Slide 4">
+  <aside class="notes">
+    <p>This slides is from the industry side</p>
+  </aside>
+</section>
+
+<!-- introduction slide 5 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-05.jpg" alt="Slide 5">
+  <p class="src">[1] 2024 United States Data Center Energy Usage Report, Lawrence Berkeley National Laboratory<br>[2] IEA (2024), Electricity 2024, IEA, Paris <a href="https://www.iea.org/reports/electricity-2024">https://www.iea.org/reports/electricity-2024</a></p>
+  <aside class="notes">
+    <p>Despite our efforts to improve chip efficiency, the energy consumption of cloud computing continues to rise, driven by the rapid growth of AI. Several companies and international agencies have made predictions about this trend. For instance, the U.S. Department of Energy (DoE) estimates that data centers could account for up to 12% of the nation&#x27;s total electricity consumption. In addition, the International Energy Agency predicts a three-fold energy increase in the next few years if we only consider AI computing.</p>
+    <p>Fuel by the serging need of AI computing, the energy consumption of data centers keeps escalating despite our effort in improving chip efficiency.</p>
+    <p>Despite by our effort in improving the chip efficiency, the energy consuming by cloud computing is still escalating fueled by the boom of AI.</p>
+    <p>Some companies and international agencies make prediction about this.</p>
+    <p>For the McKinsey, the datacenter industry is projected to grow 4 times. For the energy consumed for AI computing itself, it’s projected to increase 10x in 3 years</p>
+    <p>[1] EIA report https://www.iea.org/reports/electricity-2024</p>
+    <p>[2] McKinsey report https://www.mckinsey.com/industries/private-capital/our-insights/how-data-centers-and-the-energy-sector-can-sate-ais-hunger-for-power</p>
+  </aside>
+</section>
+
+<!-- introduction slide 6, rebuilt with 2025 open-weight models -->
+<section>
+  <h2 class="t">Energy tolls of large language models</h2>
+  <h3 class="sub">Training</h3>
+  <div class="models">
+    <div class="model">
+      <div class="org" style="color:#10a37f">OpenAI · Aug 2025</div>
+      <div class="name">gpt-oss-120b</div>
+      <div class="energy">1,470 <small>MWh</small></div>
+      <div class="foot">2.1 M H100-hours</div>
+      <div class="cw"><span>Carbon <b>642 t*</b></span><span>Water <b>6.2 ML*</b></span></div>
+    </div>
+    <div class="model">
+      <div class="org" style="color:#4d6bfe">DeepSeek · Dec 2024</div>
+      <div class="name">DeepSeek-V3</div>
+      <div class="energy">1,952 <small>MWh</small></div>
+      <div class="foot">2.79 M H800-hours</div>
+      <div class="cw"><span>Carbon <b>852 t*</b></span><span>Water <b>8.2 ML*</b></span></div>
+    </div>
+    <div class="model">
+      <div class="org" style="color:#0467df">Meta · Apr 2025</div>
+      <div class="name">Llama 4 Scout</div>
+      <div class="energy">3,500 <small>MWh</small></div>
+      <div class="foot">5.0 M H100-hours</div>
+      <div class="cw"><span>Carbon <b>1,354 t</b></span><span>Water <b>14.8 ML*</b></span></div>
+    </div>
+    <div class="model">
+      <div class="org" style="color:#0467df">Meta · Apr 2025</div>
+      <div class="name">Llama 4 Maverick</div>
+      <div class="energy">1,666 <small>MWh</small></div>
+      <div class="foot">2.38 M H100-hours</div>
+      <div class="cw"><span>Carbon <b>645 t</b></span><span>Water <b>7.0 ML*</b></span></div>
+    </div>
+  </div>
+  <div class="vrule"></div>
+  <div class="equiv">
+    <p class="equiv-lead">These four models together: <b>8,588 MWh</b></p>
+    <div class="equiv-grid">
+      <div><img src="/figures/icon-house.png" alt="House"><p><b>0.875</b> MWh<br><span>monthly electricity</span></p><p class="big"><b>9,814</b> homes</p></div>
+      <div><div class="car"><img src="/figures/icon-car.png" alt="Car"></div><p><b>1.97</b> MWh<sup>[2]</sup><br><span>per vehicle produced</span></p><p class="big"><b>4,359</b> cars</p></div>
+    </div>
+  </div>
+  <p class="src">Energy = reported GPU-hours × 700 W GPU TDP (model cards: gpt-oss arXiv:2508.10925; DeepSeek-V3 arXiv:2412.19437; Meta Llama 4 model card). Carbon for Llama 4 is Meta’s reported location-based value.<br>*Estimated, not disclosed: carbon = energy × PUE 1.17 × 0.373 kgCO₂/kWh (EPA eGRID2022 U.S. average); water = energy × (0.55 + 1.17 × 3.14) L/kWh (U.S. averages, Li et al. 2025). ML = million liters. [2] BMW ESG report</p>
+  <aside class="notes">
+    <p>Here are recent open-weight models from OpenAI, DeepSeek and Meta, released between late 2024 and 2025, with the energy used to train them. These companies report GPU-hours in their model cards. Multiplying by the 700-watt GPU power gives the energy: about 1,500 MWh for gpt-oss-120b, about 2,000 for DeepSeek-V3, and 3,500 and 1,700 for the two Llama 4 models.</p>
+    <p>Carbon and water are mostly not disclosed. Meta reports location-based carbon for Llama 4. The numbers with an asterisk are our estimates using U.S. average PUE, grid carbon intensity, on-site WUE and electricity water intensity, the same method as in our “Making AI Less Thirsty” paper.</p>
+    <p>(Next please)</p>
+    <p>Together, these four training runs used about 8,600 MWh. That could power almost 10 thousand U.S. homes for a month, or the electricity needed to produce more than 4 thousand BMW cars.</p>
+    <p>Sources: gpt-oss model card, arXiv:2508.10925 (2.1 million H100-hours). DeepSeek-V3 Technical Report, arXiv:2412.19437 (2.788 million H800 GPU-hours). Llama 4 model card (Scout 5.0M GPU-hours, 1,354 t CO2e; Maverick 2.38M GPU-hours, 645 t CO2e, location-based). EPA eGRID2022 U.S. average 823.1 lb CO2/MWh. Li et al. 2025 U.S. average PUE 1.17, on-site WUE 0.55 L/kWh, EWIF 3.142 L/kWh.</p>
+    <p>Household Energy Website: https://www.eia.gov/energyexplained/use-of-energy/electricity-use-in-homes.php</p>
+    <p>BMW: https://www.bmwgroup.com/en/sustainability/co2-reduction.html#tabs-3fae0735a7-item-606d21f5d3-tab</p>
+  </aside>
+</section>
+
+<!-- new: inference and agents -->
+<section>
+  <h2 class="t">Inference now dominates, and agents multiply it</h2>
+  <div class="area half infer">
+    <div>
+      <h3 class="col-h">Electricity per task <span>(Wh, log scale)</span></h3>
+      <div class="logbars">
+        <div class="lb"><span class="lbl">Gemini text prompt, median <em>Google 2025</em></span><div class="track"><div class="bar" style="width:9.5%"></div><b>0.24</b></div></div>
+        <div class="lb"><span class="lbl">ChatGPT query, average <em>OpenAI 2025</em></span><div class="track"><div class="bar" style="width:13.3%"></div><b>0.34</b></div></div>
+        <div class="lb"><span class="lbl">Long reasoning query, median* <em>Microsoft Research 2026</em></span><div class="track"><div class="bar" style="width:39.8%"></div><b>3.9</b></div></div>
+        <div class="lb ag"><span class="lbl">Claude Code session, median* <em>Couch 2026</em></span><div class="track"><div class="bar" style="width:65.3%"></div><b>41</b></div></div>
+        <div class="lb ag"><span class="lbl">One agentic coding prompt* <em>Hausfather 2026</em></span><div class="track"><div class="bar" style="width:79.4%"></div><b>~150</b></div></div>
+        <div class="ticks"><span>0.1</span><span>1</span><span>10</span><span>100</span><span>1,000</span></div>
+      </div>
+      <p class="tok">Agents use <b>~4×</b> the tokens of chat, multi-agent systems <b>~15×</b> (Anthropic 2025); agentic coding <b>~1000×</b> code chat (Bai et al. 2026)</p>
+    </div>
+    <div>
+      <div class="share">
+        <div class="share-num">60–70%</div>
+        <div class="share-txt">of ML energy goes to <b>inference</b><span>training 20–40%, experimentation &lt;10% (Meta and Google data, 2019–2021)</span></div>
+      </div>
+      <h3 class="col-h">Google: tokens processed per month</h3>
+      <div class="tokbars">
+        <div class="tb"><div class="bar" style="height:0.6%"></div><b>9.7 T</b><span>May 2024</span></div>
+        <div class="tb"><div class="bar" style="height:15%"></div><b>480 T</b><span>May 2025</span></div>
+        <div class="tb"><div class="bar hot" style="height:100%"></div><b>3,200 T</b><span>May 2026</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="src">Elsworth et al. 2025 (Google, arXiv:2508.15734); Altman, “The Gentle Singularity” (2025); Microsoft Research, Joule 2026 (arXiv:2509.20241); S. Couch, “Electricity use of AI coding agents” (2026); Z. Hausfather, “The real energy use of agentic AI” (2026); Anthropic, “How we built our multi-agent research system” (2025); Bai et al., arXiv:2604.22750; IEA 4E, “Data Centre Energy Use: Critical Review of Models and Results” (2025); Google I/O 2026 keynote. *Modeled estimates.</p>
+  <aside class="notes">
+    <p>Training gets the headlines, but most AI energy now goes to inference, and agents are making each task much larger.</p>
+    <p>On the left is electricity per task on a log scale. A median Gemini text prompt, measured by Google, uses about 0.24 watt-hours. OpenAI reports about 0.34 for an average ChatGPT query. A long reasoning query is around 4 watt-hours in Microsoft Research’s model. An agentic coding session with Claude Code is about 41 watt-hours at the median, more than a hundred chat queries, and one estimate puts a single agentic coding prompt at about 150 watt-hours, roughly 600 times a chat prompt. The driver is tokens: Anthropic reports agents use about four times the tokens of chat and multi-agent systems about fifteen times; on SWE-bench, agentic coding uses about a thousand times the tokens of code chat.</p>
+    <p>On the right, the IEA 4E review summarizes Meta and Google data: 60 to 70 percent of machine-learning energy goes to inference, 20 to 40 percent to training. And usage is exploding: Google processed about 9.7 trillion tokens a month in 2024, 480 trillion in 2025 and over 3.2 quadrillion in May 2026, about seven times in one year.</p>
+    <p>Caveats: the Google figure is measured; the OpenAI number has no published method; the Microsoft, Couch and Hausfather values are modeled estimates with wide ranges (Hausfather: 60–290 Wh per prompt). The 60–70% share is based on 2019–2021 data from Meta (Wu et al. 2022) and Google (Patterson et al. 2022), before mass LLM adoption, so the inference share today is likely higher.</p>
+    <p>Sources: arXiv:2508.15734; blog.samaltman.com/the-gentle-singularity; arXiv:2509.20241; simonpcouch.com/blog/2026-01-20-cc-impact/; theclimatebrink.com/p/the-real-energy-use-of-agentic-ai; anthropic.com/engineering/multi-agent-research-system; arXiv:2604.22750; iea-4e.org Data Centre Energy Use: Critical Review of Models and Results (March 2025), section 3.3.1; blog.google I/O 2026.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 7 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-07.jpg" alt="Slide 7">
+  <aside class="notes">
+    <p>So we’ve seen how energy-hungry these models are. But what does that mean for the planet?</p>
+    <p>First off, more energy means more greenhouse gases, which accelerate climate change and contribute to the extreme weather we’re seeing around the world.</p>
+    <p>Second, running these models also takes water—both directly and indirectly—which can make water shortages worse in already water stressed regions.</p>
+    <p>And finally, the air pollution from power generation, especially in fossil-fuel-heavy regions, poses serious public health risks.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 8 (Pengfei_U-WED_slides.pptx) -->
+<section data-section="Carbon" class="orig">
+  <img class="full" src="/orig/intro-08.jpg" alt="Slide 8">
+  <div class="ov ov-model">Llama 4 Scout + Maverick<br><b>1,999 tons CO<sub>2</sub>eq</b></div>
+  <div class="ov ov-n" style="left:948px;top:538px">69,000 <span>Apple Watches</span></div>
+  <div class="ov ov-n" style="left:1406px;top:539px">36,000 <span>iPhones</span></div>
+  <div class="ov ov-n" style="left:1013px;top:938px">20,000 <span>iPads</span></div>
+  <div class="ov ov-n" style="left:1392px;top:938px">14,000 <span>Surface Laptops</span></div>
+  <p class="src">Meta Llama 4 model card (location-based training emissions); Apple Product Environmental Reports; Microsoft Surface Laptop 4 eco profile</p>
+  <aside class="notes">
+    <p>Roughly speaking, the carbon emitted to train Llama 4 Scout and Maverick, about 2,000 tons of CO2 equivalent as reported by Meta, equals the footprint of producing about 36 thousand iPhones or 14 thousand laptops, according to their product environmental reports.</p>
+    <p>Llama 4: 1,354 t (Scout) + 645 t (Maverick) = 1,999 t CO2eq, location-based, Meta Llama 4 model card. Per-unit footprints: Apple Watch Series 9 29 kg, iPhone 15 56 kg, iPad Pro 11-inch 100 kg, Surface Laptop 4 145 kg (full life cycle).</p>
+    <p>iPhone 15 128G 56kg</p>
+    <p>iPad Pro 11-inch 128G 100kg</p>
+    <p>15-inch MacBook Air (2024), Apple M3 chip 256G 158kg</p>
+    <p>(Didn’t mention LCA, so I guess it’s only for production)</p>
+    <p>Apple Watch Series 9, Stainless steel case with Sport Loop - 29</p>
+    <p>https://www.apple.com/environment/pdf/Apple_Environmental_Progress_Report_2024.pdf</p>
+    <p>Surface Laptop 4 13.5-inch display 113 kg (LCA 145kg)</p>
+    <p>BMW 0.28 ton: https://www.bmwgroup.com/en/sustainability/co2-reduction.html#tabs-3fae0735a7-item-606d21f5d3-tab</p>
+    <p>Llama 3 Energy: https://huggingface.co/meta-llama/Llama-3.1-8B</p>
+  </aside>
+</section>
+
+<!-- introduction slide 9 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-09.jpg" alt="Slide 9">
+  <p class="src">Source: ElectricityMaps (April 27, 2024)</p>
+  <aside class="notes">
+    <p>Crucially, carbon emissions from AI are not uniform; they vary significantly based on geographic location. As this figure illustrates, regions with abundant renewable resources, like California (solar) and Washington (hydro), exhibit lower carbon intensity. This means that strategically deploying AI models in these &#x27;greener&#x27; regions can substantially reduce overall emissions, even with the same energy consumption.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 10 (Pengfei_U-WED_slides.pptx) -->
+<section data-section="Water" class="orig">
+  <img class="full" src="/orig/intro-10.jpg" alt="Slide 10">
+  <aside class="notes">
+    <p>So we’ve seen how energy-hungry these models are. But what does that mean for the planet?</p>
+    <p>First off, more energy means more greenhouse gases, which accelerate climate change and contribute to the extreme weather we’re seeing around the world.</p>
+    <p>Second, running these models also takes water—both directly and indirectly—which can make water shortages worse in already water stressed regions.</p>
+    <p>And finally, the air pollution from power generation, especially in fossil-fuel-heavy regions, poses serious public health risks.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 11 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-11.jpg" alt="Slide 11">
+  <aside class="notes">
+    <p>Source and illustration: Shaolei Ren, Powering AI in a Thirsty World, supplied PDF, page 4. Adapted wording and layout. This is the opening of the water section, following the carbon discussion. Transition: electricity use also creates a facility cooling requirement, which explains the link to onsite water use. The reference PDF is /Users/pflics/Downloads/Powering_AI_in_a_Thirsty_World_3.pdf.</p>
+  </aside>
+</section>
+
+<!-- new: how the heat is moved out (Azure, Modern Datacenter Cooling) -->
+<section>
+  <h2 class="t">How is the heat moved out?</h2>
+  <div class="area">
+    <div class="nums cool-steps">
+      <div class="row"><span class="n">01</span><span>Air-conditioned room<span class="d">The simplest option: cool the whole server room with HVAC. Compressors do the work, so it uses a lot of electricity.</span></span></div>
+      <div class="row"><span class="n">02</span><span>Contain the hot air<span class="d">Hot aisles send server exhaust straight back to the air handler.</span></span></div>
+      <div class="row"><span class="n">03</span><span>Move heat into water<span class="d">The air handler transfers the heat into a water loop.</span></span></div>
+      <div class="row"><span class="n">04</span><span>Evaporate it outdoors<span class="d">A fluid cooler evaporates water to reject the heat, with little compressor power.</span></span></div>
+    </div>
+    <figure class="fig">
+      <img src="/figures/idec-diagram.jpg" alt="Indirect evaporative cooling: cooled air, server racks, hot aisle, air handling unit, fluid cooler" style="max-height:760px">
+    </figure>
+  </div>
+  <p class="src">Microsoft Azure, “Modern Datacenter Cooling” (2023), indirect evaporative cooling (IDEC) diagram</p>
+  <aside class="notes">
+    <p>Nearly all the electricity becomes heat, so the question is how to carry that heat out of the building. The simplest answer is to put the servers in an air-conditioned room, like an office. That works, but the compressors in the HVAC system use a lot of electricity, so this approach is not efficient.</p>
+    <p>Modern facilities separate the job into steps. Cool air flows through the server racks. The hot exhaust is contained in a sealed hot aisle and returned to the air handling unit. The air handler moves the heat into a water loop, and the warm water is pumped to a fluid cooler outside. There, water evaporates and carries the heat away. Evaporation does the work that compressors would otherwise do, which saves electricity, and that evaporated water is the onsite water footprint.</p>
+    <p>Source: Microsoft Azure, Modern Datacenter Cooling infographic, 2023.</p>
+  </aside>
+</section>
+
+<!-- new: comparing cooling solutions (Azure table + LBNL 2024 Fig. 4.4) -->
+<section>
+  <h2 class="t">Evaporative cooling for better efficiency</h2>
+  <div class="area cool-cmp">
+    <div class="cool-figs">
+      <figure class="cf">
+        <img src="/figures/ashrae-envelopes.webp" alt="ASHRAE psychrometric chart with recommended and allowable envelopes A1 to A4">
+      </figure>
+      <figure class="cf">
+        <img src="/figures/cooling-modes.webp" alt="Cooling mode by outdoor temperature and humidity">
+      </figure>
+    </div>
+    <div>
+      <div class="pue-def">
+        <div class="pue-eq"><b>PUE</b> = <span class="frac"><span>Total facility energy</span><span>IT equipment energy</span></span></div>
+        <p>1.0: all electricity goes to computing · 2.0: one extra kWh of overhead per kWh of IT</p>
+        <p class="pue-range">Small air-conditioned rooms <b>≈ 2.0</b> → large-scale evaporative / free cooling <b class="key">1.1–1.2</b></p>
+      </div>
+      <table class="tbl cool-tbl">
+        <thead><tr><th>Cooling method</th><th>Power</th><th>Water<br>(L/kWh)</th></tr></thead>
+        <tbody>
+          <tr><td>Room air-conditioning<small>mechanical cooling</small></td><td class="hi">Very high</td><td>2.3–2.8</td></tr>
+          <tr><td>High-efficiency mechanical</td><td>Medium</td><td>0–2.8</td></tr>
+          <tr><td>Indirect evaporative</td><td class="lo">Low</td><td>0.8–2.1</td></tr>
+          <tr><td>Direct evaporative</td><td class="lo">Low</td><td>0.02–0.7</td></tr>
+          <tr><td>Free air</td><td class="lo">Low</td><td>0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <p class="src">ASHRAE TC 9.9, Thermal Guidelines for Data Processing Environments (2011); Microsoft Azure, “Modern Datacenter Cooling” (2023); PUE ranges: Shehabi et al., “2024 United States Data Center Energy Usage Report,” LBNL</p>
+  <aside class="notes">
+    <p>Why can modern facilities avoid compressors most of the time? First, servers tolerate warmer air than offices: ASHRAE recommends 18 to 27 °C inlet air, and the allowable classes A1 to A4 extend up to 32 to 45 °C. Second, the outdoor weather decides the cooling mode. When outdoor air is cool, it can be used directly. When it is warm but dry, evaporating water cools it down. Only when it is hot and humid do we need indirect evaporative or mechanical cooling.</p>
+    <p>First, the metric: power usage effectiveness, PUE, is total facility energy divided by IT equipment energy. A PUE of 1.0 means all electricity goes to computing; 2.0 means one extra kilowatt-hour for cooling and other overhead for every kilowatt-hour of computing.</p>
+    <p>Here are the main cooling options. Room air-conditioning, or mechanical cooling, has very high power use. Small data centers with direct-expansion units or air-cooled chillers sit around a PUE of 2. That means for every kilowatt-hour of computing, roughly another kilowatt-hour goes to cooling and other overhead.</p>
+    <p>Using water changed that. Large facilities with economizers and adiabatic or evaporative cooling reach a PUE of about 1.1 to 1.2. This is an important efficiency gain: much less electricity, and therefore less carbon and less pressure on the grid.</p>
+    <p>The price is water. The evaporative options use from a fraction of a liter up to about two liters per kilowatt-hour, depending on the climate. So the efficiency gain on the power side shows up as water demand, which is the topic of the rest of this talk.</p>
+    <p>Sources: Microsoft Azure, Modern Datacenter Cooling, 2023 (power and WUE ranges). Shehabi et al., 2024 United States Data Center Energy Usage Report, LBNL, Figure 4.4 (simulated PUE and WUE ranges by cooling system and space type; lower limits are best practice in favorable climates, upper limits poor efficiency in hot, humid climates). The US average PUE fell from about 1.6 in 2014 to 1.4 in 2023 (same report, Fig. 4.6).</p>
+  </aside>
+</section>
+
+<!-- introduction slide 12 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-12.jpg" alt="Slide 12">
+  <aside class="notes">
+    <p>Source: Shaolei Ren, Powering AI in a Thirsty World, supplied PDF, pages 5–6. Illustration from page 6. Explain that liquid at the chip or server level transports heat and does not by itself specify how the facility rejects heat outdoors. The water-consumption mechanism on the next slide is evaporative heat rejection. The reference PDF is /Users/pflics/Downloads/Powering_AI_in_a_Thirsty_World_3.pdf.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 13 (Pengfei_U-WED_slides.pptx), skipped: covered by the new cooling slides -->
+<section class="orig" data-visibility="hidden">
+  <img class="full" src="/orig/intro-13.jpg" alt="Slide 13">
+  <aside class="notes">
+    <p>Source: Shaolei Ren, Powering AI in a Thirsty World, supplied PDF, pages 12–13. Illustration from page 13. This is an example of evaporative assistance, not a claim that every data center uses this design. Water evaporates outside the closed coolant loop, leaves the local supply, and requires makeup water. Drain or bleed water may return to treatment where applicable. Handoff: the next existing slide defines consumption as withdrawal minus discharge and introduces water-footprint scopes. The reference PDF is /Users/pflics/Downloads/Powering_AI_in_a_Thirsty_World_3.pdf.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 15 (Pengfei_U-WED_slides.pptx), split: diagram first -->
+<section class="orig">
+  <img class="full" src="/orig/intro-15a.jpg" alt="Slide 15: data center water footprint diagram">
+  <p class="src">Li, Pengfei, Jianyi Yang, Mohammad A. Islam, and Shaolei Ren. “Making AI Less ‘Thirsty’: Uncovering and Addressing the Secret Water Footprint of AI Models.” Communications of the ACM, 2025.</p>
+  <aside class="notes">
+    <p>Next, let&#x27;s discuss the water footprint of AI models, which comprises two main components.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 15, second step: offsite and onsite water photos -->
+<section class="orig">
+  <img class="full" src="/orig/intro-15b.jpg" alt="Slide 15: offsite and onsite water">
+  <p class="src">Li, Pengfei, Jianyi Yang, Mohammad A. Islam, and Shaolei Ren. “Making AI Less ‘Thirsty’: Uncovering and Addressing the Secret Water Footprint of AI Models.” Communications of the ACM, 2025.</p>
+  <aside class="notes">
+    <p>First, there&#x27;s offsite water consumption. Similar to Scope 2 carbon emissions, this refers to the water evaporated during the generation of electricity used by the AI models. Consequently, the type of fuel source significantly impacts this water usage.</p>
+    <p>Second is onsite water consumption for cooling data centers. Modern data centers typically use a two-loop system. The inner loop circulates water to draw heat away from servers and transfer it to an external heat exchanger, consuming no water in this process. The outer loop then dissipates this heat into the atmosphere, often through water evaporation – much like how sweating cools the our body. While air-cooled chillers can reduce this onsite water usage in cooler climates, they often cannot meet the cooling demands in most locations due to climate limitations.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 16 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-16.jpg" alt="Slide 16">
+  <p class="src">Li, Pengfei, Jianyi Yang, Mohammad A. Islam, and Shaolei Ren. “Making AI Less ‘Thirsty’: Uncovering and Addressing the Secret Water Footprint of AI Models.” Communications of the ACM, 2025.</p>
+  <aside class="notes">
+    <p>Therefore, the total water footprint of AI computation is the sum of its onsite and offsite water consumption. Since both onsite and offsite water usage are proportional to energy consumption, we can factor out energy to define a key metric: Water Usage Efficiency, or WUE. We&#x27;ll denote onsite WUE as WUE_on and offsite WUE as WUE_off.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 17 (Pengfei_U-WED_slides.pptx) -->
+<section class="orig">
+  <img class="full" src="/orig/intro-17.jpg" alt="Slide 17">
+  <p class="src">Pengfei Li, Jianyi Yang, Mohammad A. Islam, Shaolei Ren, &quot;Making AI Less &#x27;Thirsty&#x27;: Uncovering and Addressing the Secret Water Footprint of AI Models,&quot; 2023.</p>
+  <aside class="notes">
+    <p>To provide a high level understanding of AI inference&#x27;s water footprint, this illustration shows the estimated water consumption when an AI model, like GPT-3, is deployed in various locations. To put this into perspective: the amount of water in a 500 milliliter bottle could support roughly 30 medium-length responses from a GPT-3 model.</p>
+    <p>WUE &amp; PUE https://datacenters.microsoft.com/sustainability/efficiency/</p>
+    <p>US AVG https://azure.microsoft.com/en-us/blog/how-microsoft-measures-datacenter-water-and-energy-use-to-improve-azure-cloud-sustainability/</p>
+    <p>WUE</p>
+  </aside>
+</section>
+
+<!-- ===== Small Bottle, Big Pipe (new section, replaces original slides 15–23) ===== -->
+
+<section data-section="Peak">
+  <h2 class="t">Annual totals and local water capacity</h2>
+  <div class="area" style="grid-template-columns: 760px 1fr">
+    <div>
+      <div class="nums">
+        <div class="row"><span class="n">01</span><span>How much water do data centers need over a year?</span></div>
+        <div class="row"><span class="n">02</span><span>What must the local water system be able to deliver <b>on the hottest day</b>?</span></div>
+      </div>
+      <p style="font-size:30px; color:#666; margin:30px 0 0">Small Bottle, Big Pipe: Quantifying and Addressing the Impact of Data Centers on Public Water Systems</p>
+    </div>
+    <figure class="fig">
+      <img src="/figures/el-paso.jpg" alt="Data center construction beside homes in El Paso, Texas">
+      <div class="cap">Data center construction beside homes, El Paso, Texas<br><span style="font-size:22px">Photo: Ivan Pierre Aguirre / The New York Times</span></div>
+    </figure>
+  </div>
+  <p class="src">Yuelin Han, Pengfei Li, Adam Wierman, and Shaolei Ren. “Small Bottle, Big Pipe: Quantifying and Addressing the Impact of Data Centers on Public Water Systems.” arXiv:2603.02705, 2026.</p>
+  <aside class="notes">
+    <p>So far, we have discussed why data centers use water and how much water they use over a year.</p>
+    <p>Those annual totals give us an important starting point. To understand the effect on a community, we also need to ask when that water is needed and whether the local water system can deliver it.</p>
+    <p>A utility has to supply enough water on the hottest day, while continuing to serve homes and other businesses. A relatively low annual total can still come with a large summer peak.</p>
+    <p>This is the perspective I want to introduce through this paper. I will focus on water used directly at data centers, and connect their annual water use to the capacity of local public water systems.</p>
+  </aside>
+</section>
+
+<!-- introduction slide 14 (Pengfei_U-WED_slides.pptx), moved before the annual water use table -->
+<section class="orig">
+  <img class="full" src="/orig/intro-14.jpg" alt="Slide 14">
+</section>
+
+<section>
+  <h2 class="t">Annual water use in the reported sample</h2>
+  <div class="area" style="grid-template-columns: 1fr 620px">
+    <div>
+      <table class="tbl">
+        <thead>
+          <tr><th>2024, selected companies</th><th>Share of sector<br>IT load covered</th><th>Withdrawal<br>(billion L)</th><th>Consumption<br>(billion L)</th><th>Consumptive<br>ratio</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Hyperscale<small>5 operators</small></td><td>~86%</td><td>40.7</td><td>31.5</td><td class="ratio">0.77</td></tr>
+          <tr><td>Colocation<small>7 providers</small></td><td>~22%</td><td>12.2</td><td>9.6</td><td class="ratio">0.79</td></tr>
+        </tbody>
+      </table>
+      <div class="cap" style="text-align:left">Totals rounded from megaliters</div>
+    </div>
+    <ul class="b">
+      <li><b>Withdrawal</b>: water supplied to the facility</li>
+      <li><b>Consumption</b>: the part that does not promptly return as liquid water, mainly evaporation</li>
+      <li class="note">Sample totals, not national sector totals</li>
+    </ul>
+  </div>
+  <aside class="notes">
+    <p>Let me first return briefly to the annual numbers, with an important distinction in how we read them.</p>
+    <p>The paper brings together data for five hyperscale operators and seven colocation providers. Hyperscale operators run large facilities for their own services. Colocation providers supply space, power, and cooling for their customers’ equipment.</p>
+    <p>In the selected hyperscale operations, annual water withdrawals were about forty-one billion liters. About thirty-one billion liters were consumed. For the selected colocation operations, withdrawals were about twelve billion liters, with almost ten billion liters consumed.</p>
+    <p>These are substantial volumes. But these rows describe the operators covered by the study. The sample covers about eighty-six percent of hyperscale IT load, compared with twenty-two percent of colocation IT load. So the difference between the rows does not tell us which entire sector uses more water nationally.</p>
+    <p>The distinction between withdrawal and consumption is also important. Withdrawal is the water supplied to the facility. Consumption is the portion that does not promptly return as liquid water, mainly because it evaporates.</p>
+    <p>Look at the last column. In both groups, close to four-fifths of the withdrawn water is consumed. That high fraction tells us something about the effect of this water use, beyond the annual volume alone.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Much of the withdrawn water evaporates</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Consumptive ratio = consumption ÷ withdrawal</li>
+      <li>Many sites fall around <b>70–90%</b></li>
+      <li>A high ratio does not mean poor management: more reuse cycles can lower withdrawal and raise the ratio</li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig1c.png" alt="Bar chart of water consumptive ratios across sites and companies, mostly between 0.7 and 0.95">
+      <div class="cap">Consumptive ratio by site and company</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Figure 1c gives us a broader view of that fraction across companies and individual sites.</p>
+    <p>The paper calls it the consumptive ratio. In plain language, it measures how much of the supplied water does not return as liquid water after use.</p>
+    <p>Many of the values are around seventy to ninety percent, and some are higher. The figure includes a range of sites and company averages, so we should expect variation. But the high ratios appear across multiple observations.</p>
+    <p>The reason follows from the cooling process we discussed earlier. Water carries heat away by evaporating. The evaporation does useful work, while also reducing the amount of liquid water available for discharge or subsequent use.</p>
+    <p>An important detail is that a high consumptive ratio does not automatically mean poor water management. A cooling tower may reuse its circulating water more times and discharge less wastewater. That can increase the fraction consumed, even while reducing total withdrawals.</p>
+    <p>So we need to keep the ratio and the total volume in view together. To understand how unusual these ratios are, it helps to compare them with other public water users.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">A high consumptive ratio among public water users</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Public supply averages about <b>12%</b></li>
+      <li>Evaporative data centers: about <b>70–90%</b></li>
+      <li>Per 100 gallons withdrawn: ~12 vs. ~75 gallons consumed</li>
+    </ul>
+    <figure class="fig">
+      <div class="ranges">
+        <div class="range-row"><span class="lbl">Urban homes</span><div class="range-track"><div class="range-bar" style="left:5%;width:10%"></div></div><span class="range-val">5–15%</span></div>
+        <div class="range-row"><span class="lbl">Office buildings</span><div class="range-track"><div class="range-bar" style="left:9.5%;width:1%"></div></div><span class="range-val">~10%</span></div>
+        <div class="range-row"><span class="lbl">Public supply average</span><div class="range-track"><div class="range-bar" style="left:11.5%;width:1%"></div></div><span class="range-val">~12%</span></div>
+        <div class="range-row"><span class="lbl">Manufacturing</span><div class="range-track"><div class="range-bar" style="left:19.5%;width:1%"></div></div><span class="range-val">~20%</span></div>
+        <div class="range-row dc"><span class="lbl">Data centers (evaporative)</span><div class="range-track"><div class="range-bar" style="left:70%;width:20%"></div></div><span class="range-val">70–90%</span></div>
+        <div class="axis"><div class="ticks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div><span></span></div>
+      </div>
+      <div class="cap">Share of withdrawn water that is consumed</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Section 3.1.1 provides some useful reference points.</p>
+    <p>Urban homes typically consume about five to fifteen percent of the water they withdraw. Office buildings are around ten percent, and manufacturing is around twenty percent in the comparisons cited by the paper. The overall public water supply average is about twelve percent.</p>
+    <p>Data centers using evaporative cooling often have much higher ratios, around seventy to ninety percent.</p>
+    <p>Imagine supplying one hundred gallons to each user. At a twelve percent consumptive ratio, about twelve gallons would be consumed. At a seventy-five percent ratio, about seventy-five gallons would be consumed. The remaining water can return as wastewater, subject to treatment and local conditions.</p>
+    <p>This comparison helps explain why equal withdrawal volumes can have different effects on downstream water availability. During a drought, that difference can matter a great deal.</p>
+    <p>It also gives us a reason to look carefully at water use, rather than treating every gallon supplied as equivalent in its effects. At the same time, we need to understand the benefit that evaporation provides. The next two panels connect this water use to weather and electricity demand.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Cooling water use rises during hot periods</h2>
+  <div class="area">
+    <ul class="b">
+      <li>WUE: liters consumed per kWh of IT energy</li>
+      <li>IT load stayed nearly constant all year</li>
+      <li>Water intensity peaks in <b>early summer</b></li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig1a.png" alt="Monthly on-site WUE in Phoenix, rising from about 4 in February to about 9.4 in June">
+      <div class="cap">Phoenix data center, monthly on-site WUE, 2019</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Figure 1a shows monthly water use at a data center in Phoenix.</p>
+    <p>The vertical axis is water usage effectiveness, or WUE. Here, it means liters of water consumed for each kilowatt-hour of IT energy. It lets us compare water use relative to the amount of computing energy.</p>
+    <p>The facility’s IT load was nearly constant, but its water intensity changed substantially across the year. Water intensity rises into the hotter months and reaches its highest level in early summer.</p>
+    <p>That is useful evidence because it connects the seasonal pattern to cooling conditions, even when computing demand remains relatively stable.</p>
+    <p>Humidity also affects cooling performance, so the exact pattern depends on local weather and the cooling system. The clear result shown here is that cooling water demand can rise substantially during hot periods.</p>
+    <p>There is also an important difference between cooling designs. A cooling tower may use water throughout the year. A system that adds evaporative assistance only during hot weather can concentrate its water demand into a much shorter period.</p>
+    <p>Before turning to those sharper peaks, let us look at why an operator would choose to use water in the first place.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Evaporative cooling can reduce electricity demand</h2>
+  <div class="area">
+    <ul class="b">
+      <li>PUE: total facility energy ÷ IT energy</li>
+      <li>Summer PUE: about <b>2.0</b> dry vs. <b>1.6</b> evaporative</li>
+      <li>Water use can improve energy efficiency</li>
+      <li class="note">Two different facilities, so cooling is not the only cause</li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig1b.png" alt="Monthly PUE for a dry-cooled and an evaporatively cooled data center in Phoenix; dry cooler reaches about 2.0 in summer, evaporative stays near 1.6">
+      <div class="cap">Two Phoenix facilities, monthly PUE in 2019</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Figure 1b helps explain the value of that water use.</p>
+    <p>It compares two data centers in Phoenix. One uses dry cooling, and the other uses evaporative cooling. The vertical axis is power usage effectiveness, or PUE. PUE compares the energy used by the whole facility with the energy used by the IT equipment. A lower value means less energy overhead.</p>
+    <p>The dry-cooled facility has a higher PUE, especially in summer. Its summer value approaches two, while the facility using evaporative cooling stays around one point six.</p>
+    <p>These are two different facilities, so the comparison does not isolate cooling technology as the only cause. It illustrates a tradeoff that the paper also documents through other sources: evaporation can lower the electricity needed to remove heat, particularly during hot conditions.</p>
+    <p>This changes how we should interpret cooling water. It can be a productive resource that improves energy efficiency and helps reduce demand on the grid when electricity demand is already high.</p>
+    <p>The benefit depends on the site and the cooling design. The decision also has to account for local water availability. A system that saves electricity still needs a reliable water supply.</p>
+    <p>That brings us to the central infrastructure question: how much water must the utility be ready to supply during the peak?</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Data center water demand has a high peak</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Peaking factor = peak demand ÷ average demand</li>
+      <li>Monthly peak-to-average ratio: <b>4.30</b> at the Iowa site</li>
+      <li>Estimated daily factor: at least <b>6.45</b></li>
+      <li class="note">Most other large users sit near 1–2</li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig2c.png" alt="Monthly peaking factors for large water users served by one Iowa waterworks; the data center has the highest at 4.30">
+      <div class="cap">Monthly peaking factors among the utility’s large users</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>To describe the size of a peak, the paper uses a simple measure: peak demand divided by average demand.</p>
+    <p>A ratio of two means that peak demand is twice the average. The time period matters, so we need to distinguish monthly peaks from daily peaks.</p>
+    <p>Figure 2c compares monthly peak-to-average ratios among large users served by the same waterworks. The data center is the orange bar on the right, with a ratio of four point three. Many other users are much closer to one or two, although some also have larger peaks.</p>
+    <p>That means the data center’s highest monthly withdrawal was more than four times its average monthly withdrawal over the period studied.</p>
+    <p>For infrastructure planning, utilities also need to consider the highest day. The paper applies a planning adjustment to estimate a daily ratio of at least six point four five for this case. That daily value is an estimate based on monthly data, rather than a directly measured daily peak.</p>
+    <p>The broader lesson is that a large gap can exist between average water use and the demand a utility must prepare to meet. Using water only during hot periods can reduce the annual total while leaving a substantial peak.</p>
+    <p>We can see how that happens by looking at the monthly record behind this comparison.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Water demand concentrates in summer</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Highest month in 2024: about <b>20 million gallons</b></li>
+      <li>Average month: about <b>5 million gallons</b></li>
+      <li>The summer surge recurs every year</li>
+      <li class="note">Monthly totals smooth out the highest days</li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig2a.png" alt="Monthly water withdrawal of an Iowa hyperscale data center, 2022 to 2025, low in winter and peaking in summer; 2024 peaks near 20 million gallons in September">
+      <div class="cap">Iowa hyperscale site, monthly withdrawals, 2022–25</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Figure 2a shows monthly withdrawals for a hyperscale data center in Iowa over several years.</p>
+    <p>Water use is relatively low during the cooler months. It then rises sharply during summer, before falling again toward winter.</p>
+    <p>Look at the green line for 2024. In its highest month, the facility withdrew about twenty million gallons. The average monthly withdrawal across the series is around five million gallons. Those approximate values make the large peak-to-average ratio easy to see.</p>
+    <p>The pattern also repeats across years, although the timing and size of the peak vary. This is a recurring seasonal demand that the utility has to plan around.</p>
+    <p>And these are monthly totals. They smooth out the variation between individual days. The highest daily withdrawal can place a stronger demand on the system than the monthly average suggests.</p>
+    <p>For the operator, using water mainly during hot periods can help keep annual use low. For the water utility, those summer peaks remain an essential part of the service requirement. The next panel shows how large this demand becomes relative to other local users.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">One facility can become a major local water user</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Up to about <b>30%</b> of the top-20 users’ withdrawals in summer</li>
+      <li>The utility’s largest annual user in <b>2024–25</b></li>
+      <li class="note">Denominator: the 20 largest users, not the whole city</li>
+    </ul>
+    <figure class="fig">
+      <img src="/figures/fig2b.png" alt="Data center share of the top-20 users' water withdrawal by month, rising to about 0.3 in summer">
+      <div class="cap">The Iowa site’s share of the utility’s top-20 users, by month</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>Figure 2b puts that seasonal demand in a local context.</p>
+    <p>It shows the data center’s share of the combined withdrawals of the twenty largest users served by the same waterworks. That denominator is important. This is a comparison with the largest users, rather than the water use of the whole city.</p>
+    <p>During cooler months, the data center accounts for only a small share. In some summer months, its share rises to around thirty percent. One facility then represents almost a third of the withdrawals within this group of large customers.</p>
+    <p>The summer demand is large enough that the paper identifies the facility as the waterworks’ largest annual water user in both 2024 and 2025.</p>
+    <p>This helps explain why a modest national percentage can coexist with a substantial local effect. Water demand is concentrated in particular communities, and the largest withdrawals can occur during a limited part of the year.</p>
+    <p>The utility has to serve that demand through its own local infrastructure. So the next question is how much additional capacity that system actually has available.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Local water capacity can limit data center growth</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Nearly all U.S. hyperscale and colocation sites rely on community water systems</li>
+      <li>Source, treatment, pumps and pipes can each limit supply</li>
+      <li>Indiana: one campus secures <b>8 of 25 MGD</b>; full delivery expected <b>2031</b></li>
+      <li class="note">Storage smooths short peaks, not a prolonged heatwave</li>
+    </ul>
+    <figure class="fig">
+      <div class="donut"><div><span><b>32%</b>of new supply</span></div></div>
+      <div class="legend"><span><i style="background:var(--chart-orange)"></i>Data center allocation</span><span><i style="background:var(--chart-grey)"></i>Other new supply</span></div>
+      <div class="cap">Share of 25 MGD planned new supply allocated to one campus</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>The paper finds that nearly all U.S. hyperscale and colocation data centers rely on community water systems. Much of this supply is treated drinking water, although some facilities also use reclaimed water.</p>
+    <p>That dependence makes the local system central to the discussion. Water has to come from a suitable source, pass through treatment, and reach the facility through pumps and pipes. A constraint at any stage can limit what the utility can supply.</p>
+    <p>Existing users and approved future connections also have claims on that capacity. For a new project, the relevant number is the capacity still available after those commitments and safety requirements.</p>
+    <p>The Indiana example in the paper shows the scale involved. One data center campus has an allocation of eight million gallons per day. That is thirty-two percent of the twenty-five million gallons per day of new supply capacity planned for the district.</p>
+    <p>In the plans discussed by the paper, delivery of the full water allocation is expected in 2031. Infrastructure timing can therefore affect how quickly the campus reaches full operation.</p>
+    <p>This is where high seasonal demand and local supply dependence come together. The facility needs a large water supply during hot conditions, and the host community must have the capacity to deliver it while serving other users.</p>
+    <p>Storage tanks can help smooth short peaks. A prolonged heatwave is harder to cover with storage alone. That is why the paper treats water capacity as a potentially significant constraint on future data center growth.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Annual water demand continues to grow</h2>
+  <div class="lead" style="top:180px">Scenarios: baseline keeps 2024 WUE; moderate −5%/yr; optimistic −10%/yr</div>
+  <div class="area wide" style="top:250px">
+    <figure class="fig">
+      <img src="/figures/fig3.png" alt="Annual water withdrawal 2024 to 2030 under low, mid and high growth, rising in all scenarios" style="max-height:420px">
+      <div class="cap">Projected direct withdrawals under low, mid, and high growth (billion gallons)</div>
+    </figure>
+    <ul class="b" style="display:grid; grid-template-columns:1fr 1fr; column-gap:60px">
+      <li>2030 baseline: about <b>80–150</b> billion gallons/year</li>
+      <li>≈ 0.6–1.1% of public-supply withdrawals, but <b>4–7%</b> of its consumptive use</li>
+    </ul>
+  </div>
+  <aside class="notes">
+    <p>The paper then asks what this pattern could mean as U.S. data centers expand through 2030.</p>
+    <p>The projections combine different rates of computing growth with different assumptions about water intensity. In the baseline, water consumed per unit of IT energy stays at its 2024 level. The moderate and optimistic scenarios assume annual reductions of five and ten percent, respectively.</p>
+    <p>These are scenarios that show how the result changes with growth and efficiency. They do not represent a single prediction of what will happen.</p>
+    <p>Under the baseline, annual withdrawals in 2030 reach roughly eighty to one hundred and fifty billion gallons across the low- and high-growth cases. Both hyperscale and colocation facilities contribute to this demand.</p>
+    <p>The paper compares that with the public water supply benchmark it uses. Data centers would account for roughly zero point six to one point one percent of withdrawals, but around four to seven percent of consumptive use. The higher consumption share follows from the high consumptive ratios we saw earlier.</p>
+    <p>Substantial improvements in water intensity reduce the projected annual volumes. Even then, the utility still needs enough capacity to serve the peak. To estimate that requirement, the paper converts average demand into planned peak demand. That produces the capacity results on the next slide.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Growth requires substantial new water capacity</h2>
+  <div class="area">
+    <ul class="b">
+      <li>Planning peaking factor: <b>4.5</b></li>
+      <li>Baseline adds <b>697–1,451</b> MGD by 2030</li>
+      <li>Optimistic still adds <b>227–604</b> MGD</li>
+      <li class="note">Sums of local needs whose peaks fall on different days; high-growth baseline valued at $15–58B</li>
+    </ul>
+    <figure class="fig">
+      <div class="bars">
+        <span class="yl" style="bottom:0">0</span>
+        <span class="yl" style="bottom:31.25%">500</span>
+        <span class="yl" style="bottom:93.75%">1,500</span>
+        <div class="ref" style="bottom:62.5%"></div>
+        <div class="grp"><div class="bar" style="height:43.6%"><span>697</span></div><div class="bar m" style="height:26.9%"><span>431</span></div><div class="bar o" style="height:14.2%"><span>227</span></div></div>
+        <div class="grp"><div class="bar" style="height:67.1%"><span>1,074</span></div><div class="bar m" style="height:43.9%"><span>702</span></div><div class="bar o" style="height:25.9%"><span>415</span></div></div>
+        <div class="grp"><div class="bar" style="height:90.7%"><span>1,451</span></div><div class="bar m" style="height:60.8%"><span>972</span></div><div class="bar o" style="height:37.8%"><span>604</span></div></div>
+      </div>
+      <div class="xlabels"><span>Low growth</span><span>Mid growth</span><span>High growth</span></div>
+      <div class="legend"><span><i style="background:var(--chart-blue)"></i>Baseline</span><span><i style="background:var(--chart-orange)"></i>Moderate</span><span><i style="background:var(--chart-light)"></i>Optimistic</span><span><i style="height:0;border-top:3px dashed #555;vertical-align:6px"></i>NYC average daily supply ≈ 1,000</span></div>
+      <div class="cap" style="margin-top:14px">Additional capacity from 2024 to 2030, million gallons/day</div>
+    </figure>
+  </div>
+  <aside class="notes">
+    <p>For the national capacity analysis, the paper uses a planning peak-to-average factor of four point five. This reflects the need to prepare for high-demand conditions, rather than size the system around an ordinary day.</p>
+    <p>Under the baseline, data center growth between 2024 and 2030 requires roughly seven hundred to fourteen hundred and fifty million gallons per day of additional water capacity.</p>
+    <p>For scale, New York City’s average daily water supply is about one thousand million gallons. The estimated additional capacity is therefore comparable in size to the daily supply of a very large city.</p>
+    <p>This is a comparison of scale. The estimate adds together capacity requirements in different places. Their peaks do not necessarily occur on the same day, and the facilities would not use that much water every day.</p>
+    <p>The optimistic scenario assumes a ten percent reduction in water intensity every year. Additional capacity still ranges from about two hundred and thirty to six hundred million gallons per day. Efficiency makes a substantial difference, while rapid computing growth continues to create a need for capacity.</p>
+    <p>The paper also estimates the value of the additional capacity. In the high-growth baseline, that valuation ranges from fifteen to fifty-eight billion dollars. This is an estimate of infrastructure value, rather than a precise bill for new funding, since some capacity may already exist or have financing.</p>
+    <p>For an individual water utility, the practical challenge remains local: securing capacity, financing improvements, and completing the work in time. Those challenges lead directly to the paper’s recommendations.</p>
+  </aside>
+</section>
+
+<section>
+  <h2 class="t">Planning for peak water demand</h2>
+  <div class="area wide" style="top:210px">
+    <div class="nums">
+      <div class="row"><span class="n">01</span><span>Report site-level peak water demand<span class="d">Alongside annual totals, so utilities know what they must be ready to serve</span></span></div>
+      <div class="row"><span class="n">02</span><span>Co-invest in local water infrastructure<span class="d">Fund upgrades, share technical support, use reclaimed water where suitable</span></span></div>
+      <div class="row"><span class="n">03</span><span>Water Capacity Neutral (“Pipe Neutral”)<span class="d">Add usable local capacity that covers the site’s allocation</span></span></div>
+      <div class="row"><span class="n">04</span><span>Plan water and power together<span class="d">Use water when the grid is stressed; save water when capacity is tight</span></span></div>
+    </div>
+  </div>
+  <aside class="notes">
+    <p>The paper closes with four recommendations that follow from this capacity perspective.</p>
+    <p>First, operators should report peak water demand for individual sites, alongside annual totals. Utilities need to know the demand they must be ready to serve. Annual fleet averages provide only part of that information.</p>
+    <p>Second, operators and communities should work together on infrastructure. That includes funding upgrades and providing technical support. Reclaimed water can reduce demand for drinking water, although it still needs suitable treatment and delivery capacity.</p>
+    <p>Third, the paper proposes Water Capacity Neutral commitments, also called Pipe Neutral. The idea is for a data center to add enough usable local capacity to cover its allocation, while allowing the community to retain capacity for other needs and future growth. This complements efforts to replenish water volumes.</p>
+    <p>Finally, water and power planning should happen together. Evaporative cooling can help reduce electricity demand when the grid is under pressure. When water capacity is tight and electricity is available, operators may have opportunities to use less water. The appropriate choice depends on the conditions of both systems.</p>
+    <p>For this part of the talk, the main point is that annual water totals give us only part of the information we need. Understanding the effect on a community also requires peak demand and the local system’s ability to meet it. That perspective helps us preserve the energy benefits of cooling water while planning for its infrastructure needs.</p>
+  </aside>
+</section>
+
+<!-- ===== end of new section ===== -->
+
+<!-- original slide 24 -->
+<section data-section="Health" class="orig">
+  <img class="full" src="/orig/slide-24.jpg" alt="Slide 24">
+  <aside class="notes">
+    <p>Despite our effort in integrating sustainable energy sources to the grid, there are more than 3,400 fossil fuel power plants in the U.S. Collectively, these power plants are the largest stationary source of air pollutions, according to EPA’s data.</p>
+    <p>Exposure to the air pollutions are dangerous, it creates a lot of health problems, including asthma, stroke and lung cancer. For instance, long-term exposure to PM2.5, even at a low level, are directly linked to numerous health outcomes, including.</p>
+    <p>Some people may believe it’s only a problem for developing countries, but actually even for US it’s a pressing concern. For instance, WHO’s recommended level of annual average PM2.5 is 5 μg/m3, but even for the most recent EPA standard, this number is 9, which is quite far from the WHO’s recommended level.</p>
+    <p>In 2019, an estimate of 93,886 deaths in the U.S. were attributed to ambient air pollution</p>
+    <p>the EPA’s recently tightened primary standard for PM2.5 sets an annual average limit of 9 μg/m3, considerably higher than the WHO’s recommended level of 5 μg/m3 [30, 31]</p>
+    <p>Electricity generation is a major contributor to ambient air pollution with substantial public health impacts[26,36,37]</p>
+    <p>[38] Between 1999~2020, a total of 460,000 excess deaths were attributed to PM generated by coal-fired power plants alone in the U.S.</p>
+    <p>Long-term exposure to PM , even at a low level, are directly linked to numerous health outcomes, including premature mortality, heart attacks, asthma, stroke, lung cancer, and even cognitive decline [21,22]</p>
+    <p>an estimate of 93,886 deaths in the U.S. were attributed to ambient air pollution [29].</p>
+    <p>increasingly impacts the environment through escalating carbon emissions [7,8]</p>
+    <p>There are more than 3,400 fossil fuel-fired power plants in the U.S. Collectively, these power plants are the largest stationary source category of nitrogen oxides</p>
+    <p>Maybe additional information about the health</p>
+    <p>Quick facts about the air pollution in US</p>
+    <p>Mainly focused on electricity, EPA says it’s leading</p>
+  </aside>
+</section>
+
+<!-- original slide 25 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-25.jpg" alt="Slide 25">
+  <p class="src">Han, Yuelin, et al. &quot;The Unpaid Toll: Quantifying and Addressing the Public Health Impact of Data Centers.&quot; arXiv preprint arXiv:2412.06288 (2024).</p>
+</section>
+
+<!-- original slide 26 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-26.jpg" alt="Slide 26">
+  <aside class="notes">
+    <p>populated counties located downwind</p>
+    <p>many counties incur relatively low health costs, a small fraction of counties bear substantially higher impacts</p>
+  </aside>
+</section>
+
+<!-- original slide 27 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-27.jpg" alt="Slide 27">
+</section>
+
+<!-- original slide 28 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-28.jpg" alt="Slide 28">
+  <aside class="notes">
+    <p>Here is a news story highlighting the urging need for environmental equity.  Residents of North Omaha, a low-income minority community, were promised relief from a coal-burning power plant built in around 1950.</p>
+    <p>This power plant contributes to some of the region’s worst air pollution and high asthma rates.</p>
+    <p>However, when the 2023 deadline to stop the coal power plant operation arrived, the utility company delayed its closure, citing the need to meet soaring energy demands from new Meta and Google data centers.</p>
+    <p>This decision highlights a stark environmental inequity: while tech giants benefit from massive energy consumption, marginalized communities like North Omaha bear the health and environmental costs.</p>
+  </aside>
+</section>
+
+<!-- original slide 29 -->
+<section data-section="Solution" class="orig">
+  <img class="full" src="/orig/slide-29.jpg" alt="Slide 29">
+  <aside class="notes">
+    <p>So, to recap, we&#x27;ve focused on three key environmental footprints of AI computing: carbon emissions, which contribute to climate change; water consumption, which intensifies water stress; and air pollution, which adversely affects public health. A critical finding is that all three of these footprints exhibit significant temporal and geographical variation. This variability isn&#x27;t just a challenge; it presents a substantial opportunity to strategically schedule AI computing by shifting workloads across different times and locations to minimize their environmental impact.</p>
+  </aside>
+</section>
+
+<!-- original slide 30 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-30.jpg" alt="Slide 30">
+  <img class="abs" src="/orig/slide-30-demo.gif" alt="Google carbon-aware computing demo" style="left:299px;top:281px;width:1264px;height:710px">
+  <img class="abs" src="/orig/slide-30-logo.png" alt="Google" style="left:300px;top:350px;width:152px;height:52px">
+  <aside class="notes">
+    <p>Next, let&#x27;s look at a demo from Google that illustrates the concept of geographical workload management. As you&#x27;ll see, Google operates multiple data centers hosting AI services. Because the availability of renewable energy varies by location, some data centers inherently have a lower environmental footprint than others. By strategically shifting workloads between these locations, it&#x27;s possible to reduce the overall environmental burden while maintaining a seamless user experience. This approach is also commonly referred to as geographical load balancing</p>
+  </aside>
+</section>
+
+<!-- dynamic server provisioning for LLM inference (added before the GLB results) -->
+<section>
+  <h2 class="t">Dynamic server provisioning for LLM</h2>
+  <img class="abs" src="/figures/llm-provisioning.png" alt="Inference requests go to a geographical load balancer, which routes them to pool schedulers that each manage CPUs, memory and GPUs" style="left:110px;top:200px;width:1700px">
+</section>
+
+<!-- original slide 35, retitled and moved before the GLB results -->
+<section class="orig">
+  <img class="full" src="/orig/slide-35.jpg" alt="Slide 35">
+  <!-- covers the title baked into the image -->
+  <div class="title-cover" style="height:190px"></div>
+  <h2 class="t">A toy example for geographical load balancing</h2>
+  <!-- users are shown from the start; one click moves them to other regions -->
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:975px;top:498px;--dx:307px;--dy:65px">
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:896px;top:498px;--dx:-42px;--dy:222px">
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:896px;top:406px;--dx:-114px;--dy:302px">
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:975px;top:406px;--dx:370px;--dy:152px">
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:816px;top:406px;--dx:-533px;--dy:-142px">
+  <img class="abs person" src="/orig/slide-35-person.png" alt="" style="left:816px;top:498px;--dx:-488px;--dy:-207px">
+  <span class="fragment person-move"></span>
+  <p class="src">Source: ElectricityMaps (May, 2024)</p>
+</section>
+
+<!-- original slide 31 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-31.jpg" alt="Slide 31">
+</section>
+
+<!-- original slide 32 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-32.jpg" alt="Slide 32">
+  <aside class="notes">
+    <p>PACING: 90 seconds.</p>
+    <p>The first recommendation is straightforward: annual reports should include site-level peak metrics. Utilities need maximum-day withdrawal and discharge, because those quantities help determine supply and wastewater infrastructure. The authors also propose peak water usage effectiveness, or pWUE: the maximum, across days, of that day’s water consumption divided by that day’s IT energy. It is a consumption metric, so it cannot replace peak withdrawal capacity in MGD. The illustration follows Appendix C: at roughly flat IT load, annual WUE of 0.15 combined with a peaking factor of 6.5 gives pWUE near one liter per kilowatt-hour. These are illustrative assumptions. Reporting should distinguish an observed peak, an estimated design peak, and a contractual allocation. A utility also needs hourly or instantaneous design flows where those constrain the network. Publishing these quantities together would make the actual planning problem much more visible.</p>
+    <p>SOURCE AND FIGURE NOTES</p>
+    <p>Paper Recommendation 1 and Definition 1, p. 21, Appendix C, p. 45. Illustrative annual WUE 0.15 L/kWh × peaking factor 6.5 ≈ 0.98 L/kWh pWUE. This is an assumption-based illustration, not a measured site record.</p>
+    <p>Paper: https://arxiv.org/abs/2603.02705v2</p>
+  </aside>
+</section>
+
+<!-- original slide 33, rebuilt in HTML so the PUE chart keeps its aspect ratio -->
+<section>
+  <h2 class="t">Cooling choices link water and power peaks</h2>
+  <ul class="b peaks-list">
+    <li>Dry cooling can increase electricity demand in hot periods</li>
+    <li>Evaporative assistance can reduce power peaks where water allows</li>
+    <li>Surplus power may reduce water demand when grid headroom exists</li>
+  </ul>
+  <figure class="fig peaks-chart">
+    <img src="/figures/fig1b.png" alt="Monthly PUE for a dry-cooled and an evaporatively cooled data center in Phoenix">
+    <figcaption class="cap">Two Phoenix facilities, monthly PUE in 2019</figcaption>
+  </figure>
+  <figure class="fig peaks-photo">
+    <img src="/figures/bbc-heatwave.jpg" alt="BBC London: school turns to hose to help pupils beat the heat">
+    <figcaption class="cap">BBC London, 25 June 2026</figcaption>
+  </figure>
+  <aside class="notes">
+    <p>PACING: 105 seconds.</p>
+    <p>The paper argues for coordinating water and power planning because a water constraint can shift pressure onto the grid. This historical comparison shows two Phoenix facilities, one using dry cooling and one using evaporative cooling. The dry-cooled facility’s PUE rises more strongly in summer. These are different facilities, so the plot is not a controlled estimate of a universal technology effect. It illustrates the tradeoff the paper develops using additional disclosures. Where water capacity is available, evaporative assistance can help reduce peak electricity demand. Where the water system is stressed and electrical headroom exists, more dry cooling may help reduce water demand. The proposed use of surplus power is conditional: solar production at midday does not guarantee spare grid capacity during a heatwave. A joint operating strategy needs both systems’ constraints. Lower direct water use can be valuable while still requiring an explicit assessment of the resulting electricity demand.</p>
+    <p>SOURCE AND FIGURE NOTES</p>
+    <p>Paper Fig. 1b, p. 11, Recommendation 4, p. 22, and Appendix E. The facilities have different IT capacities and configurations. This is a historical comparison, not a controlled test of current AI cooling systems. Reported 10–35% power benefits elsewhere in the paper are design- and site-dependent.</p>
+    <p>Paper: https://arxiv.org/abs/2603.02705v2</p>
+    <p>PHOTO CONTEXT: BBC London, 25 June 2026, as credited in supplied reference slide 11. The image provides heatwave context. It is not a data-center cooling measurement and adds no quantitative evidence to the paper results.</p>
+  </aside>
+</section>
+
+<!-- original slide 34, commented out for now
+
+<section class="orig">
+  <img class="full" src="/orig/slide-34.jpg" alt="Slide 34">
+  <aside class="notes">
+    <p>PACING: 80 seconds.</p>
+    <p>Additional tools can help, but the paper is careful about their limits. Water tanks can smooth short demand spikes. A prolonged heatwave is different. This simple sizing illustration assumes a one-MGD supply shortfall with no replenishment. Covering one day takes a million gallons. Covering seven days takes seven million, even before reserves and operational requirements. This is not an engineering design. It shows why storage alone may struggle with sustained peaks. Workload scheduling or movement across regions may reduce local demand where the service allows that flexibility. Reclaimed water can reduce reliance on potable supply, but it still requires treatment and delivery capacity, and evaporative cooling still consumes water. Each option should be evaluated against the actual bottleneck and the duration of the event. A useful portfolio combines infrastructure, cooling choices, and operational flexibility.</p>
+    <p>SOURCE AND FIGURE NOTES</p>
+    <p>Paper Appendix F, p. 48, and Section 5. Presenter calculation: shortfall × duration, assuming no replenishment and ignoring reserve requirements. One day requires 1 million gallons, seven days require 7 million gallons. This is not a recommended tank design.</p>
+    <p>Paper: https://arxiv.org/abs/2603.02705v2</p>
+  </aside>
+</section>
+-->
+
+<!-- eGLB objective: what each term means for equitable GLB (rebuilt from slide 35 of 2026_AI_public_health.pdf) -->
+<section>
+  <h2 class="t">Fairness-aware geographical load balancing</h2>
+  <img class="abs" src="/figures/eglb-objective.png" alt="Objective: minimize average hitting cost f plus switching cost c, plus long-term cost h of the average footprint p" style="left:80px;top:200px;width:1150px">
+  <div class="glb-online">
+    <p>Each hour <i>t</i>:</p>
+    <ol>
+      <li>observe demand <i>y<sub>t</sub></i> and local conditions <i>a<sub>t</sub></i></li>
+      <li>route requests <i>x<sub>t</sub></i>, without knowing the future</li>
+    </ol>
+  </div>
+  <div class="glb-terms">
+    <div class="glb-term"><b class="blue">Hitting cost <i>f</i>(<i>x<sub>t</sub></i>, <i>y<sub>t</sub></i>)</b><span>Energy cost of serving this hour&rsquo;s requests at local electricity prices</span></div>
+    <div class="glb-term"><b class="blue">Switching cost <i>c</i>(<i>x<sub>t</sub></i>, <i>x<sub>t&minus;1</sub></i>)</b><span>Penalty for shifting load abruptly between hours</span></div>
+    <div class="glb-term"><b>Footprint <i>p</i>(<i>x<sub>t</sub></i>, <i>a<sub>t</sub></i>)</b><span>Water and carbon of each data center, from its WUE and grid carbon intensity <i>a<sub>t</sub></i></span></div>
+    <div class="glb-term"><b class="red">Long-term cost <i>h</i>(&middot;)</b><span>Footprint of the most burdened region over the whole period (minimax fairness)</span></div>
+  </div>
+  <p class="glb-key">Routing is decided hour by hour, but fairness is judged on each region&rsquo;s total over <i>T</i>.</p>
+  <p class="src">Li, Pengfei, Jianyi Yang, Adam Wierman, and Shaolei Ren. &quot;Towards Environmentally Equitable AI via Geographical Load Balancing.&quot; In Proceedings of<br>the 15th ACM International Conference on Future and Sustainable Energy Systems, pp. 291-307. 2024.</p>
+  <aside class="notes">
+    <p>We route AI inference requests across data centers every hour. The first two terms are the usual GLB costs: energy cost, and a penalty for moving load too abruptly. The new term is h: it looks at each region&rsquo;s water and carbon footprint accumulated over the whole period and penalizes the most burdened region. The difficulty is that we must decide each hour without knowing future demand, prices, or water efficiency, while h depends on the whole horizon.</p>
+  </aside>
+</section>
+
+<!-- eGLB algorithm (slide 39 of 2026_AI_public_health.pdf) -->
+<section class="orig">
+  <img class="full" src="/orig/eglb-algorithm.jpg" alt="Equity regularized online mirror balanced descent (eGLB)">
+  <!-- covers the title baked into the image -->
+  <div class="title-cover" style="height:205px"></div>
+  <h2 class="t">My work: equity-aware online optimization</h2>
+  <p class="src">Li, Pengfei, Jianyi Yang, Adam Wierman, and Shaolei Ren. &quot;Towards Environmentally Equitable AI via Geographical Load Balancing.&quot; In Proceedings of<br>the 15th ACM International Conference on Future and Sustainable Energy Systems, pp. 291-307. 2024.</p>
+</section>
+
+<!-- eGLB intuition (slide 40 of 2026_AI_public_health.pdf) -->
+<section class="orig">
+  <img class="full" src="/orig/eglb-intuition.jpg" alt="High-level intuition: action, virtual price and virtual budget">
+  <!-- covers the title and subtitle baked into the image -->
+  <div class="title-cover" style="height:275px"></div>
+  <h2 class="t">High-level intuitions</h2>
+  <h3 class="sub">Why this works</h3>
+  <p class="src">Li, Pengfei, Jianyi Yang, Adam Wierman, and Shaolei Ren. &quot;Towards Environmentally Equitable AI via Geographical Load Balancing.&quot; In Proceedings of<br>the 15th ACM International Conference on Future and Sustainable Energy Systems, pp. 291-307. 2024.</p>
+</section>
+
+<!-- original slide 36 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-36.jpg" alt="Slide 36">
+  <p class="src">Li, Pengfei, Jianyi Yang, Adam Wierman, and Shaolei Ren. &quot;Towards Environmentally Equitable AI via Geographical Load Balancing.&quot; In Proceedings of<br>the 15th ACM International Conference on Future and Sustainable Energy Systems, pp. 291-307. 2024.</p>
+</section>
+
+<!-- original slide 37 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-37.jpg" alt="Slide 37">
+</section>
+
+<!-- original slide 38 -->
+<section class="orig">
+  <img class="full" src="/orig/slide-38.jpg" alt="Slide 38">
+  <aside class="notes">
+    <p>Synthesis of the supplied presentation materials. Water: Han, Li, Wierman &amp; Ren (2026). Health: Han et al., The Unpaid Toll, arXiv:2412.06288. Equity: Li et al., ACM eEnergy 2024.</p>
+  </aside>
+</section>
+
+<!-- original slide 39 -->
+<section class="orig" data-no-number>
+  <img class="full" src="/orig/slide-39.jpg" alt="Slide 39">
+</section>
+
+</div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

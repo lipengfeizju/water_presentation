@@ -1,0 +1,496 @@
+/* Matches the original UWED deck: white, Arial, black titles top-left, grey captions. */
+:root {
+  --ink: #111111;
+  --body: #222222;
+  --muted: #777777;
+  --accent: #0072a7;
+  --chart-blue: #1a73e8;
+  --chart-orange: #f08a2b;
+  --chart-light: #8eb7ec;
+  --chart-grey: #d7e0ed;
+
+  --r-background-color: #ffffff;
+  --r-main-font: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --r-heading-font: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --r-main-color: var(--body);
+  --r-heading-color: var(--ink);
+  --r-main-font-size: 39px;
+  --r-heading-font-weight: 700;
+  --r-heading-text-transform: none;
+  --r-heading-letter-spacing: 0;
+}
+
+.reveal .slides { text-align: left; }
+
+.reveal .slides section {
+  width: 1920px;
+  height: 1080px;
+  padding: 0;
+}
+
+/* Original slides are full-canvas images. */
+.reveal .slides section.orig img.full {
+  position: absolute;
+  inset: 0;
+  width: 1920px;
+  height: 1080px;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+.reveal .slides section img.abs {
+  position: absolute;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+
+/* page number, same place and size as the original */
+.reveal .slide-number,
+.reveal .slide-number-pdf {
+  position: absolute;
+  right: 36px;
+  bottom: 26px;
+  top: auto;
+  left: auto;
+  background: transparent;
+  color: var(--muted);
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  padding: 0;
+}
+.reveal .slide-number a { color: inherit; }
+
+/* ---------- new-section building blocks ---------- */
+.reveal .t {
+  position: absolute;
+  left: 96px;
+  top: 62px;
+  margin: 0;
+  font-size: 72px;
+  line-height: 1.12;
+  color: var(--ink);
+}
+.reveal .lead {
+  position: absolute;
+  left: 100px;
+  top: 190px;
+  margin: 0;
+  font-size: 39px;
+  color: #444;
+}
+/* footnote / source line, one style on every slide */
+.reveal .src {
+  position: absolute;
+  left: 96px;
+  right: 160px;
+  bottom: 30px;
+  margin: 0;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.reveal .src a { color: inherit; text-decoration: none; }
+
+/* main content area between title and source line */
+.reveal .area {
+  position: absolute;
+  left: 96px;
+  right: 96px;
+  top: 220px;
+  bottom: 110px;
+  display: grid;
+  grid-template-columns: 660px 1fr;
+  gap: 90px;
+  align-items: center;
+}
+.reveal .area.wide { grid-template-columns: 1fr; }
+.reveal .area.half { grid-template-columns: 1fr 1fr; }
+
+.reveal ul.b {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 39px;
+  line-height: 1.2;
+  color: var(--body);
+}
+.reveal ul.b li {
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 38px;
+}
+.reveal ul.b li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+}
+.reveal ul.b li.note { color: var(--muted); font-size: 32px; }
+
+.reveal .fig { margin: 0; text-align: center; }
+.reveal .fig img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 600px;
+}
+.reveal .cap {
+  margin-top: 28px;
+  font-size: 28px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* numbered list in the style of the agenda slide */
+.reveal .nums { margin: 0; }
+.reveal .nums .row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  margin-bottom: 44px;
+  font-size: 39px;
+  line-height: 1.25;
+}
+.reveal .nums .n { color: var(--accent); font-weight: 700; }
+.reveal .nums .d { display: block; font-size: 30px; color: #666; margin-top: 6px; }
+
+.reveal .key { color: var(--accent); font-weight: 700; }
+.reveal .hot { color: var(--chart-orange); font-weight: 700; }
+
+/* ---------- slide 2 table ---------- */
+.reveal table.tbl {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 36px;
+}
+.reveal table.tbl th,
+.reveal table.tbl td {
+  border: none;
+  border-bottom: 1px solid #d5d5d5;
+  padding: 22px 18px;
+  text-align: right;
+}
+.reveal table.tbl th:first-child,
+.reveal table.tbl td:first-child { text-align: left; padding-left: 0; }
+.reveal table.tbl th {
+  font-size: 26px;
+  font-weight: 400;
+  color: #666;
+  border-bottom: 2px solid #333;
+  vertical-align: bottom;
+}
+.reveal table.tbl td small { display: block; font-size: 24px; color: var(--muted); }
+.reveal table.tbl td.ratio { color: var(--accent); font-weight: 700; }
+
+/* ---------- slide 4 range chart ---------- */
+.reveal .ranges { font-size: 30px; text-align: left; }
+.reveal .range-row {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+.reveal .range-row .lbl { grid-column: 1 / -1; margin-bottom: 6px; }
+.reveal .range-track {
+  position: relative;
+  height: 26px;
+  background: #f1f3f6;
+}
+.reveal .range-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 10px;
+  background: var(--chart-blue);
+}
+.reveal .range-row.dc .range-bar { background: var(--chart-orange); }
+.reveal .range-row.dc { font-weight: 700; }
+.reveal .range-val { text-align: right; }
+.reveal .axis {
+  display: grid;
+  grid-template-columns: 1fr 130px;
+  gap: 20px;
+  font-size: 22px;
+  color: var(--muted);
+}
+.reveal .axis .ticks { display: flex; justify-content: space-between; }
+
+/* ---------- slide 10 donut ---------- */
+.reveal .donut {
+  width: 440px;
+  height: 440px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: conic-gradient(var(--chart-orange) 0 32%, var(--chart-grey) 32% 100%);
+  display: grid;
+  place-items: center;
+}
+.reveal .donut > div {
+  width: 270px;
+  height: 270px;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 30px;
+  color: #666;
+  line-height: 1.2;
+}
+.reveal .donut b { display: block; font-size: 72px; color: var(--ink); }
+.reveal .legend {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 26px;
+  font-size: 26px;
+  color: #555;
+}
+.reveal .legend i {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  vertical-align: -2px;
+}
+
+/* ---------- slide 12 grouped bars ---------- */
+.reveal .bars {
+  position: relative;
+  height: 560px;
+  margin: 0 20px 0 70px;
+  border-bottom: 2px solid #999;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  align-items: end;
+}
+.reveal .bars .grp {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+}
+.reveal .bars .bar {
+  position: relative;
+  width: 90px;
+  background: var(--chart-blue);
+}
+.reveal .bars .bar.m { background: var(--chart-orange); }
+.reveal .bars .bar.o { background: var(--chart-light); }
+.reveal .bars .bar span {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 6px;
+  font-size: 24px;
+  color: #333;
+  white-space: nowrap;
+}
+.reveal .bars .ref {
+  position: absolute;
+  left: -70px;
+  right: 0;
+  border-top: 3px dashed #555;
+  z-index: 1;
+}
+.reveal .bars .ref em {
+  position: absolute;
+  left: 70px;
+  bottom: 6px;
+  font-style: normal;
+  font-size: 24px;
+  color: #333;
+  background: #fff;
+  padding: 0 6px;
+}
+.reveal .bars .yl {
+  position: absolute;
+  left: -70px;
+  font-size: 22px;
+  color: var(--muted);
+  transform: translateY(50%);
+}
+.reveal .xlabels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  margin: 12px 20px 0 70px;
+  text-align: center;
+  font-size: 28px;
+}
+
+/* ---------- cooling slides (after "Computing electricity becomes heat") ---------- */
+.reveal .nums.cool-steps .row { margin-bottom: 34px; font-size: 36px; grid-template-columns: 100px 1fr; }
+.reveal .nums.cool-steps .d { font-size: 26px; line-height: 1.3; }
+.reveal .area.cool-cmp { top: 200px; grid-template-columns: 660px 1fr; gap: 80px; }
+.reveal .cool-figs { display: grid; grid-template-rows: 1fr 1fr; gap: 24px; height: 100%; }
+.reveal .cf { margin: 0; display: grid; grid-template-columns: 1fr; gap: 30px; align-items: center; min-height: 0; }
+.reveal .cf img { display: block; width: 100%; max-height: 340px; object-fit: contain; margin: 0; clip-path: inset(6px 0 0 0); }
+.reveal .cf figcaption { font-size: 25px; line-height: 1.35; color: #444; }
+.reveal .cf figcaption b { display: block; margin-bottom: 8px; font-size: 30px; color: var(--ink); }
+.reveal table.cool-tbl { font-size: 26px; }
+.reveal table.cool-tbl th,
+.reveal table.cool-tbl td { padding: 16px 14px; }
+.reveal table.cool-tbl td.hi { color: #c62828; font-weight: 700; }
+.reveal table.cool-tbl td.lo { color: var(--accent); font-weight: 700; }
+.reveal .pue-shift { margin: 40px 0 0; font-size: 42px; color: var(--ink); }
+.reveal .pue-shift span { color: var(--muted); margin: 0 14px; }
+.reveal .pue-shift small { display: block; margin-top: 10px; font-size: 26px; color: var(--muted); }
+
+/* ---------- "Cooling choices link water and power peaks" ---------- */
+.reveal ul.peaks-list { position: absolute; left: 120px; top: 250px; }
+.reveal ul.peaks-list li { margin-bottom: 30px; }
+.reveal .peaks-chart { position: absolute; left: 110px; top: 500px; }
+.reveal .peaks-chart img { height: 450px; max-height: none; }
+.reveal .peaks-chart .cap,
+.reveal .peaks-photo .cap { margin-top: 12px; font-size: 26px; text-align: left; }
+.reveal .peaks-photo { position: absolute; left: 1386px; top: 470px; }
+.reveal .peaks-photo img { height: 470px; max-height: none; }
+
+/* ---------- "Energy tolls" training slide ---------- */
+.reveal .sub { position: absolute; left: 96px; top: 190px; margin: 0; font-size: 50px; color: var(--ink); }
+.reveal .models {
+  position: absolute; left: 96px; top: 280px; width: 860px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 34px 40px;
+}
+.reveal .model { border-top: 3px solid #222; padding-top: 14px; }
+.reveal .model .org { font-size: 24px; font-weight: 700; }
+.reveal .model .name { font-size: 36px; margin-top: 4px; color: var(--ink); }
+.reveal .model .energy { font-size: 62px; font-weight: 700; color: var(--ink); line-height: 1.15; margin-top: 8px; }
+.reveal .model .energy small { font-size: 32px; font-weight: 400; vertical-align: baseline; }
+.reveal .model .foot { font-size: 22px; color: var(--muted); }
+.reveal .model .cw { display: flex; gap: 28px; margin-top: 10px; font-size: 24px; color: #555; }
+.reveal .model .cw b { color: var(--ink); }
+.reveal .vrule { position: absolute; left: 1010px; top: 280px; height: 640px; border-left: 3px dotted #999; }
+.reveal .equiv { position: absolute; left: 1070px; top: 280px; width: 780px; text-align: center; }
+.reveal .equiv-lead { margin: 0 0 20px; font-size: 32px; }
+.reveal .equiv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.reveal .equiv-grid img { display: block; margin: 0 auto; height: 230px; max-height: none; }
+.reveal .equiv .car { height: 230px; overflow: hidden; display: flex; align-items: flex-start; justify-content: center; }
+.reveal .equiv .car img { height: 300px; margin-top: -10px; }
+.reveal .equiv-grid p { margin: 16px 0 0; font-size: 30px; line-height: 1.25; }
+.reveal .equiv-grid p b { font-size: 52px; }
+.reveal .equiv-grid p span { font-size: 26px; color: #555; }
+.reveal .equiv-grid p.big b { font-size: 64px; }
+.reveal .equiv .closed { margin-top: 40px; font-size: 26px; color: var(--accent); font-weight: 700; }
+
+/* ---------- inference / agents slide ---------- */
+.reveal .area.infer { top: 200px; bottom: 150px; gap: 110px; align-items: start; }
+.reveal .col-h { margin: 0 0 22px; font-size: 32px; color: var(--ink); }
+.reveal .col-h span { font-weight: 400; color: var(--muted); font-size: 24px; }
+.reveal .logbars .lb { margin-bottom: 18px; }
+.reveal .logbars .lbl { display: block; font-size: 25px; margin-bottom: 6px; }
+.reveal .logbars .lbl em { font-style: normal; color: var(--muted); font-size: 20px; margin-left: 8px; }
+.reveal .logbars .track { display: flex; align-items: center; gap: 12px; height: 32px; }
+.reveal .logbars .bar { height: 100%; background: var(--chart-blue); }
+.reveal .logbars .lb.ag .bar { background: var(--chart-orange); }
+.reveal .logbars .track b { font-size: 26px; }
+.reveal .logbars .ticks {
+  display: flex; justify-content: space-between; width: 100%;
+  border-top: 1px solid #999; padding-top: 4px; font-size: 18px; color: var(--muted);
+}
+.reveal .tok { margin: 26px 0 0; font-size: 26px; line-height: 1.35; color: #333; }
+.reveal .share { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; margin-bottom: 40px; }
+.reveal .share-num { font-size: 104px; font-weight: 700; color: var(--chart-orange); line-height: 1; }
+.reveal .share-txt { font-size: 34px; line-height: 1.25; }
+.reveal .share-txt span { display: block; margin-top: 8px; font-size: 22px; color: var(--muted); }
+.reveal .tokbars {
+  height: 330px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 50px;
+  align-items: end; border-bottom: 2px solid #999; margin-top: 50px;
+}
+.reveal .tokbars .tb { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+.reveal .tokbars .bar { width: 120px; min-height: 3px; background: var(--chart-blue); }
+.reveal .tokbars .bar.hot { background: var(--chart-orange); }
+.reveal .tokbars b { order: -1; font-size: 28px; margin-bottom: 6px; }
+.reveal .tokbars span { position: absolute; bottom: -40px; font-size: 24px; color: #555; }
+
+/* ---------- overlays on image slides (slide 8 numbers) ---------- */
+.reveal .ov { position: absolute; margin: 0; color: #000; white-space: nowrap; }
+.reveal .ov-model {
+  left: 107px; top: 655px; width: 520px; text-align: center;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 42px; line-height: 1.3;
+}
+.reveal .ov-model b { font-weight: 400; font-size: 47px; }
+.reveal .ov-n { font-size: 50px; line-height: 56px; }
+.reveal .ov-n span { font-size: 25px; }
+.reveal table.cool-tbl td:not(:first-child) { white-space: nowrap; }
+.reveal table.cool-tbl th, .reveal table.cool-tbl td { padding-left: 10px; padding-right: 10px; }
+
+.reveal .pue-def { margin: 0 0 34px; padding: 22px 28px; background: #f3f6fa; border-left: 6px solid var(--accent); }
+.reveal .pue-eq { display: flex; align-items: center; gap: 18px; font-size: 38px; }
+.reveal .pue-eq .frac { display: inline-flex; flex-direction: column; text-align: center; font-size: 30px; }
+.reveal .pue-eq .frac span:first-child { border-bottom: 2px solid #222; padding-bottom: 4px; }
+.reveal .pue-eq .frac span:last-child { padding-top: 4px; }
+.reveal .pue-def p { margin: 12px 0 0; font-size: 24px; color: #555; }
+.reveal .area.cool-cmp { bottom: 130px; align-items: start; }
+.reveal .pue-def p.pue-range { margin-top: 14px; font-size: 28px; color: var(--ink); }
+.reveal .pue-def p.pue-range b { font-size: 32px; }
+
+/* ---------- slide 35 users (re-created PPT animation) ---------- */
+.reveal .slides section img.person { width: 68px; height: 84px; transition: translate 1s ease-in-out; }
+.reveal .slides section:has(.person-move.visible) img.person { translate: var(--dx) var(--dy); }
+
+/* white box over a title baked into a slide image, replaced by an HTML .t title */
+.reveal .title-cover { position: absolute; left: 0; top: 0; width: 1920px; background: #fff; }
+
+/* ---------- fairness-aware GLB objective ---------- */
+.reveal .glb-online { position: absolute; left: 1290px; top: 300px; width: 560px; font-size: 32px; line-height: 1.3; color: var(--body); }
+.reveal .glb-online p { margin: 0 0 10px; }
+.reveal .glb-online ol { margin: 0; padding-left: 40px; }
+.reveal .glb-online li { margin-bottom: 8px; }
+.reveal .glb-terms {
+  position: absolute; left: 96px; right: 96px; top: 600px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 22px 60px;
+}
+.reveal .glb-term b { display: block; font-size: 32px; color: var(--ink); }
+.reveal .glb-term span { display: block; margin-top: 4px; font-size: 28px; line-height: 1.25; color: #444; }
+.reveal .glb-term b.blue { color: #0b72b9; }
+.reveal .glb-term b.red { color: #e3261b; }
+.reveal .glb-key { position: absolute; left: 96px; right: 96px; top: 900px; margin: 0; font-size: 32px; font-weight: 700; color: var(--ink); }
+
+
+/* ---------- RIT GCCIS look (title slide and slide header), after the ISTE 780 course decks ---------- */
+:root { --rit-orange: #f76902; }
+
+.reveal .slides section.cover p, .reveal .slides section.cover h1 { margin: 0; position: absolute; }
+.reveal .cover-logo { position: absolute; left: 70px; top: 40px; width: 1310px; margin: 0; }
+.reveal .cover-frame { position: absolute; left: 233px; top: 248px; width: 1448px; height: 520px; }
+/* orange bracket: full top and bottom bars, short stubs down/up at both sides */
+.reveal .cover-frame::before, .reveal .cover-frame::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 130px;
+  border: 15px solid var(--rit-orange);
+}
+.reveal .cover-frame::before { top: 0; border-bottom: 0; }
+.reveal .cover-frame::after { bottom: 0; border-top: 0; }
+.reveal .cover-title { left: 85px; top: 100px; font-size: 92px; line-height: 1.05; color: #000; letter-spacing: -1px; }
+.reveal .cover-sub { left: 85px; top: 340px; font-size: 44px; font-weight: 700; color: #000; }
+.reveal .cover-name { left: 0; width: 1920px; top: 835px; text-align: center; font-size: 54px; font-weight: 700; color: #000; }
+.reveal .cover-joint { right: 52px; bottom: 40px; font-size: 22px; color: #444; }
+
+/* slide header (built in src/main.js): logo + orange rule left, sections + page number right */
+.reveal .hdr { position: absolute; left: 0; top: 0; width: 1920px; height: 100px; z-index: 5; }
+.reveal .hdr img { position: absolute; left: 52px; top: 26px; width: 560px; margin: 0; }
+.reveal .hdr .rule-l { position: absolute; left: 44px; width: 578px; top: 88px; height: 5px; background: var(--rit-orange); }
+.reveal .hdr .secs {
+  position: absolute; left: 680px; right: 165px; top: 50px;
+  display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px;
+}
+.reveal .hdr .sec span { display: block; font-size: 21px; line-height: 26px; color: #aaa; text-align: center; }
+.reveal .hdr .sec.done span { color: #555; }
+.reveal .hdr .sec.now span { color: #000; font-weight: 700; }
+.reveal .hdr .sec i {
+  display: block; height: 5px; margin-top: 12px;
+  background: linear-gradient(to right, var(--rit-orange) var(--fill), #fbd6bc var(--fill));
+}
+.reveal .hdr .num {
+  position: absolute; right: 52px; top: 50px; width: 78px; height: 26px; margin: 0;
+  border-left: 2px solid #000; text-align: right; font-size: 22px; line-height: 26px; font-weight: 700; color: #000;
+}
+.reveal .hdr .num + .rule-r { position: absolute; right: 44px; width: 86px; top: 88px; height: 5px; background: var(--rit-orange); }
+
+/* original content is shrunk a little so the header does not cover the titles */
+.reveal .slides section > .body { position: absolute; inset: 0; transform: scale(0.92); transform-origin: 50% 100%; }
